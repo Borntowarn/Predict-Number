@@ -24,11 +24,9 @@ class neuralnet(nn.Module):
         prev_size = input_dim
         this_size = hidden_dim
         for i in range(num_layers):
-            self.layers.add_module('layer{}'.format(
-                i), nn.Linear(prev_size, this_size))
+            self.layers.add_module('layer{}'.format(i), nn.Linear(prev_size, this_size))
             self.layers.add_module('activation{}'.format(i), nn.ReLU())
-            self.layers.add_module('DropOut{}'.format(i),
-                                   nn.Dropout(p=p_dropout))
+            self.layers.add_module('DropOut{}'.format(i), nn.Dropout(p=p_dropout))
             prev_size = hidden_dim
         self.layers.add_module('outputLayer', nn.Linear(prev_size, output_dim))
         if softmax:
@@ -46,12 +44,9 @@ def testing(model, dataset):
     real = []
     for data, target in tqdm(generator, leave=False):
         data = data.view([-1, 784]).to(model.device)
-        #print(data[0])
         target = target.to(model.device)
-        #print (target[0])
 
-        predict.extend(
-            (torch.argmax(model(data), dim=-1)).cpu().numpy().tolist())
+        predict.extend((torch.argmax(model(data), dim=-1)).cpu().numpy().tolist())
         real.extend(target.cpu().numpy().tolist())
 
     return np.mean(np.array(predict) == np.array(real))
@@ -85,6 +80,7 @@ mnist_test = datasets.MNIST('./mnist', train=False, download=True, transform=tra
 device = ('cuda' if torch.cuda.is_available() else 'cpu')
 print(torch.cuda.get_device_name())
 
+######################## TRAINING ########################
 """valid = KFold(5)
 val_of_batch = valid.get_n_splits(mnist_train)
 
@@ -110,18 +106,11 @@ score = testing(model=model, dataset=mnist_test)
 print (np.round(score*10000)/100)
 path = os.path.join('./VSCODE PYTHON/Weights/Detect Num.pth')
 torch.save(model.cpu().state_dict(), path)"""
+############################################################
 
-model = neuralnet(hidden_dim=64, p_dropout=0.3, num_layers=1, softmax=True)
-model.load_state_dict(torch.load('./VSCODE PYTHON/Weights/Detect Num.pth'))
-im = Image.open("./VSCODE PYTHON/Neuron/Detect Num/1.jpg")
 
-data_image = np.array(im, dtype=np.uint8)
-data_image = data_image[:,:,0]
-data_image = np.squeeze(data_image)
-data_image1 = torch.from_numpy(data_image).float()
-data_image1 = data_image1 / 255.0
 
-print(predictt(model, data_image1))
+######################## VALIDATION ########################
 """for item in tqdm(hyperparametres):
 	scores = []
 	for train, test in tqdm(valid.split(X_TRAIN), total= val_of_batch, leave = False):
@@ -141,4 +130,26 @@ print(predictt(model, data_image1))
 		mean = testing(model=model, dataset=VALID_DATA)
 		scores.append(mean)
 	model_scores.append(np.mean(scores))
-	print("model with: lr: {item[lr]}, val_layers: {item[val_layers]}, hidden_neur: {item[hidden_neur]}, p: {item[p]}, l2: {item[l2]}, epochs: {item[epochs]} HAS SCORE - {score}".format(item = item, score = model_scores[-1]))"""
+	print("model with: lr: {item[lr]}, 
+                       val_layers: {item[val_layers]}, 
+                       hidden_neur: {item[hidden_neur]}, 
+                       p: {item[p]}, l2: {item[l2]}, 
+                       epochs: {item[epochs]} 
+                       HAS SCORE - {score}".format(item = item, score = model_scores[-1]))"""
+############################################################
+
+
+
+########### Загрузка и тестирование на реальном изображении ###########
+model = neuralnet(hidden_dim=64, p_dropout=0.3, num_layers=1, softmax=True)
+model.load_state_dict(torch.load('./VSCODE PYTHON/Weights/Detect Num.pth'))
+im = Image.open("./VSCODE PYTHON/Neuron/Detect Num/1.jpg")
+
+data_image = np.array(im, dtype=np.uint8)
+data_image = data_image[:,:,0]
+data_image = np.squeeze(data_image)
+data_image1 = torch.from_numpy(data_image).float()
+data_image1 = data_image1 / 255.0
+
+print(predictt(model, data_image1))
+#######################################################################
